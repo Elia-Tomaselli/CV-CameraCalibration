@@ -11,6 +11,12 @@ video_paths = [
 
 video = cv.VideoCapture(video_paths[0])
 
+camera_calibration_matrix = [
+    [3110,   0,    2048],
+    [0,      3110, 900],
+    [0,      0,    1],
+]
+
 # Verifica file video valido
 if not video.isOpened():
     print("Errore nel caricamento del file")
@@ -25,7 +31,7 @@ while True:
         break
 
     cv.imshow("Frame", frame)
-    
+
     if cv.waitKey(25) == ord('q'):
         break
 
