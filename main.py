@@ -3,15 +3,15 @@ from os import path
 
 VIDEO_DIR = "videos"
 
-video_paths = [
+videoPaths = [
     path.join(VIDEO_DIR, "out14.mp4"),
     path.join(VIDEO_DIR, "out20.mp4"),
     path.join(VIDEO_DIR, "out42.mp4")
 ]
 
-video = cv.VideoCapture(video_paths[0])
+video = cv.VideoCapture(videoPaths[0])
 
-camera_calibration_matrix = [
+intrinsicCameraMatrix = [
     [3110,   0,    2048],
     [0,      3110, 900],
     [0,      0,    1],
