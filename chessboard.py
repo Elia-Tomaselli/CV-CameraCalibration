@@ -30,24 +30,31 @@ for image_path in image_paths:
     # Find the chessboard corners
     found_corners, corners = cv.findChessboardCorners(
         gray, (CHESSBOARD_WIDTH, CHESSBOARD_HEIGHT), None)
-    pprint(corners.tolist())
-
+    
     # If corners are found, add object points and image points (after refining them)
     if found_corners:
+        # pprint(corners.tolist())
         world_points.append(object_points)
         refined_corners = cv.cornerSubPix(
             gray, corners, (11, 11), (-1, -1), termination_criteria)
         # print(np.array_equal(corners, refined_corners))
-        pprint(corners.tolist())
         image_points.append(refined_corners)
 
         # Draw and display the corners
         cv.drawChessboardCorners(
             img, (CHESSBOARD_WIDTH, CHESSBOARD_HEIGHT), refined_corners, found_corners)
         cv.imshow('img', img)
-        cv.waitKey(3000)
+        cv.waitKey(200)
 
 cv.destroyAllWindows()
+
+for i in range(len(image_points)):
+    print("Image #" + str(i+1) + ":\n")
+    print("Image points:\n")
+    pprint(image_points[i].tolist())
+    print("\nWorld points:\n")
+    pprint(world_points[i].tolist())
+    print("\n")
 
 # Calibrate the camera
 calibration_success, camera_matrix, distortion_coeffs, rotation_vecs, translation_vecs = cv.calibrateCamera(
