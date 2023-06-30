@@ -1,6 +1,7 @@
 import numpy as np
 import cv2 as cv
 import glob
+from pprint import pprint
 
 # Define chessboard dimensions
 CHESSBOARD_WIDTH = 6
@@ -29,19 +30,22 @@ for image_path in image_paths:
     # Find the chessboard corners
     found_corners, corners = cv.findChessboardCorners(
         gray, (CHESSBOARD_WIDTH, CHESSBOARD_HEIGHT), None)
+    pprint(corners.tolist())
 
     # If corners are found, add object points and image points (after refining them)
     if found_corners:
         world_points.append(object_points)
         refined_corners = cv.cornerSubPix(
             gray, corners, (11, 11), (-1, -1), termination_criteria)
+        # print(np.array_equal(corners, refined_corners))
+        pprint(corners.tolist())
         image_points.append(refined_corners)
 
         # Draw and display the corners
         cv.drawChessboardCorners(
             img, (CHESSBOARD_WIDTH, CHESSBOARD_HEIGHT), refined_corners, found_corners)
         cv.imshow('img', img)
-        cv.waitKey(500)
+        cv.waitKey(3000)
 
 cv.destroyAllWindows()
 
