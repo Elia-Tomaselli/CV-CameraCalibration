@@ -5,7 +5,7 @@ from pprint import pprint
 
 # Define chessboard dimensions
 CHESSBOARD_WIDTH = 6
-CHESSBOARD_HEIGHT = 7
+CHESSBOARD_HEIGHT = 9
 
 # Termination criteria for corner detection
 termination_criteria = (cv.TERM_CRITERIA_EPS +
@@ -44,7 +44,7 @@ for image_path in image_paths:
         cv.drawChessboardCorners(
             img, (CHESSBOARD_WIDTH, CHESSBOARD_HEIGHT), refined_corners, found_corners)
         cv.imshow('img', img)
-        cv.waitKey(200)
+        cv.waitKey(10000)
 
 cv.destroyAllWindows()
 
