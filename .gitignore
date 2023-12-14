@@ -131,4 +131,6 @@ dmypy.json
 # Custom
 video/*
 samples/*
+output/*
+```
 ```
