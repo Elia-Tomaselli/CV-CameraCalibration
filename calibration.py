@@ -1,3 +1,5 @@
+# Script to calibrate the cameras using the court points
+
 import numpy as np
 import cv2 as cv
 import glob
