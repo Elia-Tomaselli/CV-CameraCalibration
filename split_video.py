@@ -1,11 +1,13 @@
+# Description: This script splits the videos out9safe.mp4, out10safe.mp4, and out11safe.mp4 into four sections.
+# The four sections of the videos out9safe.mp4 and out11safe.mp4 do not have the same width (the 1st and the 4th sections are a little bit smaller compared to the 2nd and the 3rd).
+# It uses the ffmpeg command to split the videos, so make sure to have ffmpeg installed on your system.
+
 import os
 
+# The names of the videos
+# Change these names if you want to split different videos
 file_names = ["out9safe", "out10safe", "out11safe"]
 
-# The four sections of the videos out9safe.mp4 and out11safe.mp4
-#do not have the same width 
-# the 1st and the 4th sections are a little bit smaller
-# compared to the 2nd and the 3rd
 video_widths = [[896, 1152, 1152, 896], [1024, 1024, 1024, 1024], [896, 1152, 1152, 896]]
 video_heights = [1792, 1800, 1792]
 

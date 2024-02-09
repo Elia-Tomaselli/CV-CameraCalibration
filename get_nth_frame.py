@@ -1,6 +1,20 @@
-import os
-import subprocess
+# This script will get the nth frame from a video file.
+
+import argparse
 import cv2 as cv
+import os
+
+
+def main(args):
+    image = get_nth_frame(args.video_path, args.n)
+
+    if image is not None:
+        filename, extension = os.path.splitext(os.path.basename(args.video_path))
+        cv.imwrite(f"{filename}-{args.n}.jpg", image)
+
+        cv.imshow(f"Frame {args.n}", image)
+        cv.waitKey(0)
+        cv.destroyAllWindows()
 
 
 def get_nth_frame(video_path, n):
@@ -9,7 +23,7 @@ def get_nth_frame(video_path, n):
         print("Error: Couldn't open video file")
         return None
 
-    cap.set(cv.CAP_PROP_POS_FRAMES, n - 1)  # Set the frame position (zero-based index)
+    cap.set(cv.CAP_PROP_POS_FRAMES, n)
 
     ret, frame = cap.read()
     if not ret:
@@ -20,13 +34,13 @@ def get_nth_frame(video_path, n):
     return frame
 
 
-camera_number = 12
-video_path = os.path.join("videos", f"out{camera_number}.mp4")
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Get the nth frame from a video file")
 
-output_directory = os.path.join("output", "court_images", "raw")
-output_image_path = os.path.join(output_directory, f"out{camera_number}.jpg")
+    parser.add_argument("video_path", type=str, help="The path to the video file")
 
-image = get_nth_frame(video_path, 1)
+    parser.add_argument("n", type=int, help="The frame number")
 
-os.makedirs(output_directory, exist_ok=True)
-cv.imwrite(output_image_path, image)
+    args = parser.parse_args()
+
+    main(args)
