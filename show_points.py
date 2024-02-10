@@ -67,10 +67,12 @@ if __name__ == "__main__":
     parser.add_argument("camera_number", type=int, help="The camera number")
 
     image_type_parser_group = parser.add_mutually_exclusive_group(required=True)
-    image_type_parser_group.add_argument("--distorted", action="store_true", help="Use the distorted images")
-    image_type_parser_group.add_argument("--undistorted-with-crop", action="store_true", help="Use the cropped images")
+    image_type_parser_group.add_argument("-d", "--distorted", action="store_true", help="Use the distorted images")
     image_type_parser_group.add_argument(
-        "--undistorted-without-crop", action="store_true", help="Use the cropped images"
+        "-uw", "--undistorted-with-crop", action="store_true", help="Use the cropped images"
+    )
+    image_type_parser_group.add_argument(
+        "-uwo", "--undistorted-without-crop", action="store_true", help="Use the cropped images"
     )
 
     args = parser.parse_args()

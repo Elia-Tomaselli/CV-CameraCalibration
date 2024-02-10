@@ -275,6 +275,8 @@
       ]
 
 # This camera is very distorted
+# We also included the basketball court points for this camera in the distorted case
+# The points are used in the calibration_with_court.py script
 6:
   coordinates: [0.0, -10.0, 6.3]
   distorted:
@@ -288,6 +290,18 @@
         [3.0, -4.5, 0.0],
         [-3.0, -4.5, 0.0],
         [-9.0, -4.5, 0.0],
+
+        [14.0, 7.5, 0.0],
+        [0.0, 7.5, 0.0],
+        [-14.0, 7.5, 0.0],
+
+        [14.0, 2.45, 0.0],
+        [14.0, -2.45, 0.0],
+        [-14.0, 2.45, 0.0],
+        [-14.0, -2.45, 0.0],
+
+        [5.0, 7.5, 0.0],
+        [-5.0, 7.5, 0.0],
       ]
     image_points:
       [
@@ -299,6 +313,18 @@
         [2579, 1790],
         [1197, 1774],
         [268, 1631],
+
+        [3191, 869],
+        [1901, 796],
+        [610, 843],
+        
+        [3453, 1094],
+        [3761, 1406],
+        [342, 1062],
+        [27, 1367],
+
+        [2437, 811],
+        [1364, 801],
       ]
   undistorted_with_crop:
     world_points:

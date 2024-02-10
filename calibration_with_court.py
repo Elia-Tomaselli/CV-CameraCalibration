@@ -1,172 +1,91 @@
 # Script to calibrate the cameras using the court points
+# It will use the points from the points.yaml file and the images
+# from the images/distorted directory to calibrate the cameras.
 
-import numpy as np
+import argparse
 import cv2 as cv
-from pprint import pprint
-from os import path
+import numpy as np
+import os
+import yaml
 
-# The camera used for the calibration, change it if you change the camera used for calibration
-CAMERA_NUMBER = 6
 
-IMAGES_PATH = path.join(path.dirname(__file__), 'images')
+def main(args):
+    camera_number = args.camera_number
 
-IMAGES_NAMES = {
-    1: 'out1.png',
-    2: 'out2.png',
-    3: 'out3.png',
-    4: 'out4.png',
-    5: 'out5.png',
-    6: 'out6.png',
-    7: 'out7.png',
-    8: 'out8.png',
-}
+    IMAGES_DIRECTORY = os.path.join(os.path.dirname(__file__), "images", "court", "distorted")
+    OUTPUT_DIRECTORY = os.path.join(os.path.dirname(__file__), "images", "court", "undistorted_with_court")
+    image_name = f"out{camera_number}.jpg"
+    image_path = os.path.join(IMAGES_DIRECTORY, image_name)
 
-IMAGE_NAME = IMAGES_NAMES[CAMERA_NUMBER]
+    image = cv.imread(image_path)
+    height, width = image.shape[:2]
 
-IMAGE_PATH = path.join(IMAGES_PATH, IMAGE_NAME)
+    if image is None:
+        print("Image not found")
+        return
 
-img = cv.imread(IMAGE_PATH)
-gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+    with open("points.yaml", "r") as file:
+        data = yaml.safe_load(file)
+        camera_points = data[camera_number]["distorted"]
 
-# World points and image points for image "out2.png"
-# volleyballWorldPoints = [
-#     [-9.0, -4.5, 0.0],
-#     [-3.0, -4.5, 0.0],
-#     [3.0, -4.5, 0.0],
-#     [9.0, -4.5, 0.0],
+        world_points = camera_points["world_points"]
+        image_points = camera_points["image_points"]
 
-#     [-9.0, 4.5, 0.0],
-#     [-3.0, 4.5, 0.0],
-#     [3.0, 4.5, 0.0],
-#     [9.0, 4.5, 0.0],
+        world_points = np.array([world_points], dtype=np.float32)
+        image_points = np.array([image_points], dtype=np.float32)
 
-#     [-9.0, -6.25, 0.0],
-#     [-3.0, -6.25, 0.0],
-#     [3.0, -6.25, 0.0],
-#     [9.0, -6.25, 0.0],
+    success, camera_matrix, distortion_coefficients, rotation_vector, translation_vector = cv.calibrateCamera(
+        world_points, image_points, (width, height), None, None
+    )
 
-#     [-9.0, 6.25, 0.0],
-#     [-3.0, 6.25, 0.0],
-#     [3.0, 6.25, 0.0],
-#     [9.0, 6.25, 0.0],
+    # Print the calibration results
+    print("Calibration was successful: " + str(success))
+    print("Camera matrix:")
+    print(camera_matrix)
+    print("\nDistortion coefficients:")
+    print(distortion_coefficients)
+    print("\nRotation vectors:")
+    print(rotation_vector)
+    print("\nTranslation vectors:")
+    print(translation_vector)
 
-#     [-6.0, -4.5, 0.0],
-#     [0.0, -4.5, 0.0],
-#     [6.0, -4.5, 0.0],
-# ]
-# volleyballImagePoints = [
-#     [745, 1347],
-#     [1431, 1380],
-#     [2242, 1392],
-#     [2945, 1380],
+    # Get the optimal new camera matrix and region of interest
+    new_camera_matrix, region_of_interest = cv.getOptimalNewCameraMatrix(
+        camera_matrix, distortion_coefficients, (width, height), 1, (width, height)
+    )
 
-#     [1096, 1042],
-#     [1584, 1044],
-#     [2108, 1052],
-#     [2602, 1065],
+    print("\nOptimal camera matrix: ")
+    print(new_camera_matrix)
 
-#     [645, 1442],
-#     [1382, 1493],
-#     [2286, 1506],
-#     [3039, 1477],
+    undistorted_image = cv.undistort(image, camera_matrix, distortion_coefficients, None, new_camera_matrix)
 
-#     [1144, 1003],
-#     [1603, 1005],
-#     [2091, 1012],
-#     [2551, 1025],
+    # crop the image
+    # x, y, w, h = region_of_interest
+    # undistorted_image = undistorted_image[y:y+h, x:x+w]
 
-#     [1088, 1367],
-#     [1833, 1390],
-#     [2594, 1390],
-# ]
+    os.makedirs(OUTPUT_DIRECTORY, exist_ok=True)
 
-# basketballWorldPoints = [
-#     [-14.0, -7.5, 0.0],
-#     [14.0, -7.5, 0.0],
-#     [-14.0, 7.5, 0.0],
-#     [14.0, 7.5, 0.0],
-# ]
-# basketballImagePoints = [
-#     [150, 1458],
-#     [3551, 1507],
-#     [859, 982],
-#     [2848, 1013],
-# ]
+    cv.imwrite(os.path.join(OUTPUT_DIRECTORY, image_name), undistorted_image)
 
-# World points and image points for image "out6.png"
-volleyballWorldPoints = [
-    [-9.0, -4.5, 0],
-    [-3.0, -4.5, 0],
-    [3.0, -4.5, 0],
-    [9.0, -4.5, 0],
+    # Calculate reprojection error
+    mean_error = 0
 
-    [-9.0, 4.5, 0],
-    [-3.0, 4.5, 0],
-    [3.0, 4.5, 0],
-    [9.0, 4.5, 0],
-]
+    for i in range(len(world_points)):
+        reprojected_image_points, _ = cv.projectPoints(
+            world_points[i], rotation_vector[i], translation_vector[i], camera_matrix, distortion_coefficients
+        )
+        reprojected_image_points = reprojected_image_points.reshape(image_points.shape)
+        error = cv.norm(image_points[i], reprojected_image_points[i], cv.NORM_L2) / len(reprojected_image_points)
+        mean_error += error
 
-volleyballImagePoints = [
-    [268, 1632],
-    [1198, 1775],
-    [2579, 1790],
-    [3513, 1667],
+    print("Total error: {}".format(mean_error / len(world_points)))
 
-    [860, 943],
-    [1519, 928],
-    [2278, 936],
-    [2938, 964],
-]
 
-basketballWorldPoints = []
-basketballImagePoints = []
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Calibrate the cameras using the court points")
 
-worldPoints = np.array(
-    [volleyballWorldPoints + basketballWorldPoints], dtype=np.float32)
-imagePoints = np.array([volleyballImagePoints + basketballImagePoints], dtype=np.float32)
+    parser.add_argument("camera_number", type=int, help="The camera number")
 
-# Calibrate the camera
-calibrationSuccess, cameraMatrix, distortionCoeffs, rotationVecs, translationVecs = cv.calibrateCamera(
-    worldPoints, imagePoints, gray.shape[::-1], None, None)
+    args = parser.parse_args()
 
-# Print the calibration results
-print("Calibration was successful: " + str(calibrationSuccess))
-print("Camera matrix:")
-print(cameraMatrix)
-print("\nDistortion coefficients:")
-print(distortionCoeffs)
-print("\nRotation vectors:")
-pprint(rotationVecs)
-print("\nTranslation vectors:")
-print(translationVecs)
-
-width, height=gray.shape[:2]
-
-# Get the optimal new camera matrix and region of interest
-optimalCameraMatrix, roi=cv.getOptimalNewCameraMatrix(
-    cameraMatrix, distortionCoeffs, (width, height), 1, (width, height))
-
-print("\nOptimal camera matrix: ")
-print(optimalCameraMatrix)
-
-# Undistort
-undistortedImg=cv.undistort(
-    img, cameraMatrix, distortionCoeffs, None, optimalCameraMatrix)
-
-# crop the image
-# x, y, w, h = roi
-# undistortedImg = undistortedImg[y:y+h, x:x+w]
-
-cv.imwrite('result.png', undistortedImg)
-
-# Reprojection error
-meanError=0
-for i in range(len(worldPoints)):
-    imagePoints2, _=cv.projectPoints(
-        worldPoints[i], rotationVecs[i], translationVecs[i], cameraMatrix, distortionCoeffs)
-    imagePoints2=imagePoints2.reshape(imagePoints.shape)
-    error=cv.norm(imagePoints[i], imagePoints2[i],
-                    cv.NORM_L2) / len(imagePoints2)
-    meanError += error
-
-print("total error: {}".format(meanError / len(worldPoints)))
+    main(args)
