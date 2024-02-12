@@ -1,72 +1,93 @@
-# Progetto di Computer Vision
+# Single Camera Multiple Focus Calibration
 
-[Link](https://drive.google.com/drive/folders/1tIRdiU4CT_9tqHtj1EaxWvbHOXSfvXn5?usp=sharing) della cartella Google Drive con i video.
+This folder holds various python scripts that were developed during the 2023/2024 UniTN Computer Vision course project for the SanbàPolis sports hall cameras. One script here helps to get the extrinsic camera parameters from the different cameras. Each script's purpose is described below.
 
-[Link](https://hanwhavision.eu/it/prodotto/pno-a9081r/) della videocamera installata al sanba.
+## Usage
 
-[Link](https://docs.opencv.org/4.x/dc/dbb/tutorial_py_calibration.html) dato dal tutor delle risorse OpenCV per la calibrazione intrinseca.
+### calibration_with_court.py
 
-[Link](https://drive.google.com/drive/u/2/folders/1P6Bs7bx_CGXWCbx_5wyAnqc8fPY2SGxO) della cartella Google Drive con i risultati dei test.
+This script uses the volleyball court corner points to calculate the intrinsic matrix of the camera. It uses as input the distorted points in the *points.yaml* file. The output image is saved in the *images/undistorted_with_court* folder.
 
-# Formula proiezione
+#### Arguments
 
-$$
-   P_{\text{image}} = K \cdot [R | t] \cdot P_{\text{world}}
-$$
+- ``camera-number``: the camera you want to calibrate
 
-dove $P_{\text{image}}$ e $P_{\text{world}}$ sono dei punti in coordinate omogenee:
+```bash
+# Example for checking the calibration using the court corner points of camera 3
+python calibration_with_court.py 3
+```
 
-$$P_{\text{image}} = \begin{bmatrix} x \\ y \\ 1 \end{bmatrix}$$
+---
 
-$$P_{\text{world}} = \begin{bmatrix} X \\ Y \\ Z \\ 1 \end{bmatrix}$$
+### extrinsics.py
 
-e dove K, R e t sono delle matrici che rappresentano rispettivamente i parametri intrinsici, e estrinsici di rotazione e traslazione.
+This script uses the volleyball court corner points to calculate the extrinsic matrix of the camera. It uses as input either the undistorted_with_crop or undistorted_without_crop points in the *points.yaml* file. It also uses the intrinsic camera matrices in the *camera_parameters* folder.
 
+#### Arguments
 
-$$
-K = 
-    \begin{bmatrix}
-        f_x & \gamma & c_x \\
-        0 & f_y & c_y \\
-        0 & 0 & 1
-    \end{bmatrix}
-$$
+- ``camera-number``: the camera you want to calibrate
+- either ``--with-crop`` (``-w``) or ``without-crop`` (``-wo``): choose between obtaining the extrinsic matrix using undistorted images with or without crop
+- optionally ``--size`` (``-s``): this changes the size covered in the plot, defaults to 10
 
-$$
-[R | t] =
-    \left[ \begin{array}{ccc|c}
-        r_{11} & r_{12} & r_{13} & t_x \\
-        r_{21} & r_{22} & r_{32} & t_y \\
-        r_{31} & r_{32} & r_{33} & t_z
-    \end{array} \right]
-$$
+```bash
+# Example for calibrating camera 2 using cropped undistorted images
+python extrinsics.py 4 --without-crop -s 20
+```
 
-Per introdurre la correzione della barrel distortion o della tangential distortion solitamente quello che viene fatto è applicare queste formule:
+---
 
-Per la barrel distortion la formula è
+### get_nth_frame.py
 
-$$
-P_{\text{distorted}} =
-    \begin{bmatrix}
-        1 + k_1 \cdot r^2 + k_2 \cdot r^4 \dotsm & 0 \\
-        0 & 1 + k_1 \cdot r^2 + k_2 \cdot r^4 \dotsm \\
-    \end{bmatrix} \cdot P_{\text{image}}
-$$
+This script is mostly for utility, it can be used to extract the nth frame from a video. The output image frame will be saved in the project directory.
 
-dove $k_1$ e $k_2$ regolano l'entità della barrel distortion, e $r$ è la distanza radiale $r^2 = x^2 + y^2$ dei punti non distorti rispetto al punto principale dell'immagine.
+#### Arguments
 
-Aggiungendo la tangential distortion la formula per la distorsione diventa
+- ``video-path``: the input video path to extract the frame from
+- ``n``: the nth frame to save
 
-$$
-\hat{x} = x (1 + k_1 r^2 + k_2 r^4 + \dotsm) + 2p_1 x y + p_2 (r^2 + x^2)
-\\
-\hat{y} = y (1 + k_1 r^2 + k_2 r^4 + \dotsm) + p_1 (r^2 + y^2) + 2p_2 x y
-$$
-che può essere visto come
-$$
-\hat{x} = x + \Delta{x}_{\text{radial}} + \Delta{x}_{\text{tangential}}
-\\
-\hat{y} = y + \Delta{y}_{\text{radial}} + \Delta{y}_{\text{tangential}}
-$$
+```bash
+# Example for getting the first frame of a video
+python get_nth_frame.py videos/out1.mp4 0
+```
 
-dove $p_1$ e $p_2$ regolano l'entità della tangential distortion, e $r$ uguale a sopra.
+---
+
+### show_points.py
+
+This script is used to check were the points defined in the *points.yaml* file lie on the image. It uses the images in the *images/court* directory. To close the image preview window press **Esc**.
+
+#### Arguments
+
+- ``camera-number``: the camera you want to examine
+- either ``--distorted`` (``-d``), ``--undistorted-with-crop`` (``-uw``) or ``--undistorted-without-crop`` (``-uwo``): choose between which image to inspect.
+
+```bash
+# Example for inspecting the points on the distorted image captured by camera 1
+python show_points.py 1 --distorted
+```
+
+---
+
+### split_video.py
+
+This is a utility script that can be used to split the different sections of the videos captured from the cameras positioned on the ceiling (namely camera number 9, 10 and 11). Check that the variables declared inside, such as the video path and section sizes are correct. Also make sure to have **FFmpeg** installed.
+
+```bash
+python split_video.py
+```
+
+---
+
+### undistort.py
+
+This scripts uses the images in the *images/court/distorted* folder and the camera intrinsic matrices in the *camera_parameters* folder to undistort the images, and places them appropriately in the *images/court/undistorted_with_crop* or *images/court/undistorted_without_crop*.
+
+#### Arguments
+
+- ``camera-number``: the camera that has taken the image you want to undistort
+- either ``--with-crop`` (``-w``) or ``without-crop`` (``-wo``): choose between having an undistorted image with or without crop
+
+```bash
+## Undistort the image captured from the camera number 3 with crop
+python undistort.py 3 --with-crop
+```

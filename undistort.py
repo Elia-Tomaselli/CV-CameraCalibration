@@ -54,8 +54,8 @@ if __name__ == "__main__":
     parser.add_argument("camera_number", type=int, help="The camera number")
 
     undistortion_mode_group = parser.add_mutually_exclusive_group(required=True)
-    undistortion_mode_group.add_argument("--with-crop", action="store_true", help="Undistort with crop")
-    undistortion_mode_group.add_argument("--without-crop", action="store_true", help="Undistort without crop")
+    undistortion_mode_group.add_argument("-w", "--with-crop", action="store_true", help="Undistort with crop")
+    undistortion_mode_group.add_argument("-wo", "--without-crop", action="store_true", help="Undistort without crop")
 
     args = parser.parse_args()
 
