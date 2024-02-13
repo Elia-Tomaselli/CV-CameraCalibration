@@ -129,6 +129,8 @@ dmypy.json
 .pyre/
 
 # Custom
+.vscode
 videos/*
 images/*
 output/MapXMapY/*
+frames

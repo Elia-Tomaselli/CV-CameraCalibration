@@ -9,17 +9,19 @@
 - [Introduction](#introduction)
 - [Usage](#usage)
   - [SMART-VIDEO-camera-calibration.ipynb](#smart-video-camera-calibrationipynb)
-  - [calibration_with_court.py](#calibration_with_courtpy)
+  - [stitch.py](#stitchpy)
     - [Arguments](#arguments)
-  - [extrinsics.py](#extrinsicspy)
+  - [calibration\_with\_court.py](#calibration_with_courtpy)
     - [Arguments](#arguments-1)
-  - [get_nth_frame.py](#get_nth_framepy)
+  - [extrinsics.py](#extrinsicspy)
     - [Arguments](#arguments-2)
-  - [show_points.py](#show_pointspy)
+  - [get\_nth\_frame.py](#get_nth_framepy)
     - [Arguments](#arguments-3)
-  - [split_video.py](#split_videopy)
-  - [undistort.py](#undistortpy)
+  - [show\_points.py](#show_pointspy)
     - [Arguments](#arguments-4)
+  - [split\_video.py](#split_videopy)
+  - [undistort.py](#undistortpy)
+    - [Arguments](#arguments-5)
 
 # Introduction
 
@@ -29,11 +31,45 @@ These scripts aid in obtaining both the intrinsic and extrinsic camera parameter
 
 # Usage
 
+First of all install the required packages
+
+```bash
+pip3 install -r requirements.txt
+```
+
+Make sure to have also **FFmpeg** installed in your system.
+
 ## SMART-VIDEO-camera-calibration.ipynb
 
 This Python notebook enables the extraction of extrinsic parameters and calibration of multiple cameras simultaneously. It uses as input the video files in the _video_ folder. The output images are saved in the _output_ folder and the camera parameters in the _pickle_ folder.
 
 To run the notebook, open it in Jupyter Notebook and run all the cells you need.
+
+---
+
+## stitch.py
+
+This script is used to stitch together the videos with different sections captured by the cameras installed on the ceiling. The script follows these steps:
+
+1. Two crops of the input video are created using **FFmpeg**
+2. The frames of the two crops are extracted and saved in the `frames/distorted` folder
+3. The frames are undistorted using the calibration maps in the `calibration` folder, and the undistorted images are placed in the `frames/undistorted` folder
+4. The different sections are stitched together and placed in the `frames/stitched` folder
+5. All the stitched frames are merged into an output video
+
+### Arguments
+
+- `--input-video` (`-i`): the video to stitch the sections of
+- `--output-video` (`-o`): the output video that is generated
+- `--skip-crop`: if you wish to skip step 1.
+- `--skip-extraction`: if you wish to skip step 2.
+- `--skip-calibration`: if you wish to skip step 3.
+
+```bash
+python3 stitch.py -i input_video.mp4 -o output_video.mp4
+```
+
+---
 
 ## calibration_with_court.py
 
