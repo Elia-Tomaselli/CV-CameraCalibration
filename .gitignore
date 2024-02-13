@@ -129,7 +129,6 @@ dmypy.json
 .pyre/
 
 # Custom
-video/*
+videos/*
+images/*
 output/MapXMapY/*
-```
-```
